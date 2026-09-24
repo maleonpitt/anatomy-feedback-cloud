@@ -1,10 +1,12 @@
-# Phase 6 — hypothetical ALB + EC2 backend (learning model only)
+# Hypothetical AWS infrastructure (EKS / ECR / CloudFront learning model)
 #
 # DO NOT run terraform apply or terraform destroy against a real AWS account.
-# Safe local commands: terraform fmt, terraform validate (after init downloads providers).
+# Safe local commands: terraform fmt, terraform validate (after init -backend=false).
 #
-# This module models:
-#   Internet → ALB (public) → Target Group → EC2 (private) → Uvicorn :5000
+# Primary practice path:
+#   ECR → EKS nodes → Pods (Uvicorn) + CloudFront → S3 (React)
+#
+# Alternate learning path (main.tf): ALB → EC2
 
 terraform {
   required_version = ">= 1.5.0"

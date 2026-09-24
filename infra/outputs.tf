@@ -47,3 +47,23 @@ output "category_data_bucket_name" {
   description = "Documented placeholder for Phase 4 category storage (backend only)."
   value       = var.category_data_bucket_name
 }
+
+output "ecr_repository_url" {
+  description = "ECR repo URL pattern for API images (placeholder account in real apply)."
+  value       = aws_ecr_repository.api.repository_url
+}
+
+output "eks_cluster_name" {
+  description = "EKS cluster name."
+  value       = aws_eks_cluster.main.name
+}
+
+output "eks_cluster_endpoint" {
+  description = "EKS API endpoint (would be used by kubectl after apply)."
+  value       = aws_eks_cluster.main.endpoint
+}
+
+output "practice_aws_account_id" {
+  description = "Documented practice account — not contacted by this module."
+  value       = var.aws_account_id_placeholder
+}

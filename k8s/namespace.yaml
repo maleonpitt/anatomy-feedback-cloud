@@ -1,0 +1,14 @@
+# Kubernetes manifests — FastAPI API on EKS (practice / apply-ready sketches)
+#
+# These are NOT applied to any cluster from this repo by default.
+# Local practice: kind / minikube. AWS practice: only after you authorize.
+#
+# Image placeholder: replace ACCOUNT/REGION when you have a real ECR push.
+#   423687459077.dkr.ecr.us-east-1.amazonaws.com/anatomy-feedback-api:latest
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: anatomy-feedback
+  labels:
+    app.kubernetes.io/part-of: anatomy-feedback

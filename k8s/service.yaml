@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: anatomy-feedback-api
+  namespace: anatomy-feedback
+  labels:
+    app: anatomy-feedback-api
+spec:
+  type: ClusterIP
+  selector:
+    app: anatomy-feedback-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

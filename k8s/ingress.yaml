@@ -1,0 +1,26 @@
+# Requires AWS Load Balancer Controller in a real EKS cluster.
+# This file is a sketch for practice — not applied automatically.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: anatomy-feedback-api
+  namespace: anatomy-feedback
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:000000000000:certificate/PLACEHOLDER
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+spec:
+  rules:
+    - host: api.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: anatomy-feedback-api
+                port:
+                  number: 80

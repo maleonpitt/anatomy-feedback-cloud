@@ -71,15 +71,7 @@ See [`SECURITY.md`](SECURITY.md).
 - `anatomy-feedback-v2` — prior modernization / local architecture practice  
 - This repo — cloud packaging, ECR/ECS, Terraform, CI/CD practice  
 
-Terraform under `infra/` is a **learning model** until you explicitly authorize `apply` against account `423687459077`.
+Terraform under `infra/` and manifests under `k8s/` are **apply-ready sketches for practice**.  
+Do **not** `terraform apply` or create a real EKS cluster unless you explicitly authorize it.
 
-## Practice roadmap (EKS-focused)
-
-1. **Containerize API** — production-ready Dockerfile, local `docker run` / compose  
-2. **ECR** — repo + CI build/push image (OIDC to AWS when ready)  
-3. **Kubernetes manifests** — Deployment, Service, Ingress, ConfigMap/Secret patterns (local kind/minikube optional)  
-4. **Terraform EKS** — cluster + node group/Fargate profile, IRSA, ALB controller (apply only when authorized)  
-5. **Frontend** — S3 + CloudFront pipeline  
-6. **CD** — GitHub Actions deploy image tag to EKS  
-
-Optional later: mirror the same image on **ECS** for comparison.
+See [`docs/EKS_PRACTICE.md`](docs/EKS_PRACTICE.md) and [`k8s/README.md`](k8s/README.md).

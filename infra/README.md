@@ -1,7 +1,7 @@
-# Infrastructure learning model (Phases 6–7)
+# Infrastructure learning model (EKS-first)
 
-**This directory is for design, reading, and local validation only.**  
-It does **not** deploy infrastructure and must **not** be applied against the live AWS account without explicit authorization.
+**Code-only / apply-ready sketches.**  
+Do **not** run `terraform apply` or `destroy` against AWS account `423687459077` (or any account) unless you explicitly authorize it.
 
 ## Target architecture
 
@@ -11,33 +11,26 @@ It does **not** deploy infrastructure and must **not** be applied against the li
           ┌─────────────┴─────────────┐
           │                           │
           ↓                           ↓
-     CloudFront                      ALB :443
+     CloudFront                   ALB Ingress
           ↓                           ↓
-     Private S3                 Target Group
-     (React build)                    ↓
-                                   EC2 → Uvicorn → FastAPI
-                                        ↓
-                              Category S3 (backend)
+     Private S3                    EKS Service
+     (React)                          ↓
+                                   Pods (ECR image)
+                                      ↓
+                                   FastAPI
+                                      ↓
+                              Category S3
 ```
-
-**Nginx is retired** from this model. Legacy config: [`../legacy/`](../legacy/).
 
 ## Files
 
 | File | Role |
 |------|------|
-| `versions.tf` | Provider pin; skip credential checks for local validate |
-| `variables.tf` | Placeholder inputs (VPC, subnets, certs, buckets, domains) |
-| `main.tf` | Phase 6: ALB, listener, target group, SGs, EC2 |
-| `frontend.tf` | Phase 7: private S3, OAC, CloudFront, SPA fallback |
-| `outputs.tf` | Key outputs for learning |
-
-## Two S3 buckets
-
-| Variable | Purpose |
-|----------|---------|
-| `frontend_bucket_name` | React static assets (CloudFront only) |
-| `category_data_bucket_name` | Documented placeholder for `CATEGORY_BUCKET_NAME` (backend) |
+| `ecr.tf` | ECR repository for API images |
+| `eks.tf` / `eks_iam.tf` | EKS cluster, node group, IAM |
+| `frontend.tf` | CloudFront + private frontend S3 |
+| `main.tf` | Alternate EC2+ALB model (legacy learning) |
+| `variables.tf` / `outputs.tf` | Placeholders only |
 
 ## Safe local commands
 
@@ -50,11 +43,7 @@ terraform validate
 
 ## Forbidden
 
-- `terraform apply` / `terraform destroy` / `terraform plan` against a real account
-- Any AWS CLI that creates, modifies, or queries production resources
+- `terraform apply` / `terraform destroy` / `terraform plan` against a real account  
+- Creating real EKS/ECR/CloudFront resources  
 
-## Documentation
-
-- [`../docs/PHASE_6_ALB.md`](../docs/PHASE_6_ALB.md) — API path
-- [`../docs/PHASE_7_CLOUDFRONT.md`](../docs/PHASE_7_CLOUDFRONT.md) — frontend path
-- [`../docs/LOCAL_DEVELOPMENT.md`](../docs/LOCAL_DEVELOPMENT.md) — run locally without AWS
+See [`../docs/EKS_PRACTICE.md`](../docs/EKS_PRACTICE.md) and [`../k8s/README.md`](../k8s/README.md).

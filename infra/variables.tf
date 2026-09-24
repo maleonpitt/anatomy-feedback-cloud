@@ -89,3 +89,50 @@ variable "category_data_bucket_name" {
   type        = string
   default     = "anatomy-feedback-categories-PLACEHOLDER"
 }
+
+# --- EKS / ECR practice (primary path; code-only — do not apply) ---
+
+variable "aws_account_id_placeholder" {
+  description = "Documented practice account ID (not used to call AWS)."
+  type        = string
+  default     = "423687459077"
+}
+
+variable "ecr_repository_name" {
+  description = "ECR repository name for the FastAPI image."
+  type        = string
+  default     = "anatomy-feedback-api"
+}
+
+variable "eks_cluster_name" {
+  description = "EKS cluster name."
+  type        = string
+  default     = "anatomy-feedback-eks"
+}
+
+variable "eks_kubernetes_version" {
+  description = "Kubernetes version for the EKS control plane."
+  type        = string
+  default     = "1.29"
+}
+
+variable "eks_node_instance_type" {
+  description = "Instance type for the managed node group."
+  type        = string
+  default     = "t3.medium"
+}
+
+variable "eks_node_desired_size" {
+  type    = number
+  default = 2
+}
+
+variable "eks_node_min_size" {
+  type    = number
+  default = 1
+}
+
+variable "eks_node_max_size" {
+  type    = number
+  default = 3
+}
