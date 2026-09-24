@@ -24,28 +24,26 @@ GitHub Actions (CI/CD)
         ├─► push API image → Amazon ECR
         └─► (later) React build → S3 + CloudFront
 
-Runtime (practice path — ECS first):
+Runtime (practice path — EKS / Kubernetes):
   Browser → CloudFront → private S3 → React
-  Browser → ALB → ECS Fargate → Uvicorn/FastAPI
+  Browser → ALB Ingress → EKS pods → Uvicorn/FastAPI
                               └─ category S3 + external APIs via secrets
 ```
 
 | Piece | Practice choice |
 |-------|-----------------|
-| **Image registry** | **ECR** (stores images) |
-| **Run containers** | **ECS Fargate** first (simpler) |
-| **Kubernetes** | **EKS** later (optional) — also pulls from **ECR** |
+| **Image registry** | **ECR** (build once, pull from EKS) |
+| **Run containers** | **EKS** (Kubernetes) — primary DevOps practice track |
+| **Optional alternate** | ECS Fargate — lighter path if you want a non-K8s comparison later |
 | **Frontend** | S3 + CloudFront |
-| **IaC** | Terraform |
-| **CI/CD** | GitHub Actions |
+| **IaC** | Terraform (VPC, EKS, ECR, ALB/Ingress, IAM) |
+| **CI/CD** | GitHub Actions → ECR → (later) deploy to EKS |
 
 ### ECR vs ECS vs EKS
 
-- **ECR** = where container images live (push/pull).  
-- **ECS** = runs those images as tasks/services (start here).  
-- **EKS** = runs those same images on Kubernetes (advanced track later).
-
-You need **ECR + (ECS or EKS)**. Not “ECR instead of ECS.”
+- **ECR** = where container images live (push/pull). Required for either orchestrator.  
+- **EKS** = managed Kubernetes — run the same image as Deployments/Services/Ingress (**this repo’s main practice goal**).  
+- **ECS** = AWS-native tasks/services — optional later for comparison; not required to learn K8s.
 
 ## Local development
 
@@ -74,3 +72,14 @@ See [`SECURITY.md`](SECURITY.md).
 - This repo — cloud packaging, ECR/ECS, Terraform, CI/CD practice  
 
 Terraform under `infra/` is a **learning model** until you explicitly authorize `apply` against account `423687459077`.
+
+## Practice roadmap (EKS-focused)
+
+1. **Containerize API** — production-ready Dockerfile, local `docker run` / compose  
+2. **ECR** — repo + CI build/push image (OIDC to AWS when ready)  
+3. **Kubernetes manifests** — Deployment, Service, Ingress, ConfigMap/Secret patterns (local kind/minikube optional)  
+4. **Terraform EKS** — cluster + node group/Fargate profile, IRSA, ALB controller (apply only when authorized)  
+5. **Frontend** — S3 + CloudFront pipeline  
+6. **CD** — GitHub Actions deploy image tag to EKS  
+
+Optional later: mirror the same image on **ECS** for comparison.
