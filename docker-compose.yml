@@ -1,0 +1,29 @@
+version: "3.9"
+
+# Local development — backend API only.
+# Frontend: cd frontend && npm start  (http://localhost:3000)
+# API:      this service              (http://localhost:5001)
+#
+# See docs/LOCAL_DEVELOPMENT.md
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: feedback-backend-local
+    ports:
+      - "5001:5000"
+    environment:
+      FLASK_ENV: local
+      CATEGORY_STORE_TYPE: local
+      FRONTEND_URL: http://localhost:3000
+      CORS_ALLOWED_ORIGINS: http://localhost:3000
+      SESSION_SECRET_KEY: local-dev-secret-not-for-production
+    volumes:
+      - ./backend/sessions:/app/sessions
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

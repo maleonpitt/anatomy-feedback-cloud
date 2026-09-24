@@ -1,0 +1,9 @@
+# Local-only Terraform artifacts (provider cache, state if accidentally created)
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json

@@ -1,0 +1,50 @@
+# Node modules
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environments / test tooling
+venv/
+.venv/
+.venv-pytest/
+.pytest_cache/
+
+# Environment files with secrets (allow committed examples only)
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Docker artifacts
+*.pid
+*.log
+
+# Certificates, keys, and secrets
+pem/
+*.pem
+
+# MacOS / system
+.DS_Store
+
+# Local builds and deploy artifacts
+frontend/build/
+*.tar.gz
+
+# Terraform local cache (lock file is committed)
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.*
+
+# Legacy nginx logs (if recreated at repo root only)
+/nginx/
+
+# Runtime session / category data
+flask_session/
+sessions/
+backend/sessions/
+backend/categories.csv
+backend/data.csv

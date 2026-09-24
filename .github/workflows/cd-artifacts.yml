@@ -1,0 +1,41 @@
+name: CD (artifacts only)
+
+# Packages a frontend build tarball for download.
+# Does NOT deploy to AWS or modify production infrastructure.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  package-frontend:
+    name: Build and package frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build
+        working-directory: frontend
+        env:
+          CI: true
+          REACT_APP_API_BASE_URL: https://api.example.com
+        run: |
+          npm ci
+          npm run build
+
+      - name: Create tarball
+        run: tar -czf frontend-build.tar.gz -C frontend/build .
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build-package
+          path: frontend-build.tar.gz
+          retention-days: 30
