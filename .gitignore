@@ -26,6 +26,9 @@ venv/
 # Certificates, keys, and secrets
 pem/
 *.pem
+*.key
+credentials.json
+.aws/
 
 # MacOS / system
 .DS_Store
@@ -34,10 +37,13 @@ pem/
 frontend/build/
 *.tar.gz
 
-# Terraform local cache (lock file is committed)
+# Terraform local cache and state (never commit state)
 infra/.terraform/
 infra/*.tfstate
 infra/*.tfstate.*
+infra/crash.log
+**/*.tfvars
+!infra/*.tfvars.example
 
 # Legacy nginx logs (if recreated at repo root only)
 /nginx/
@@ -48,3 +54,4 @@ sessions/
 backend/sessions/
 backend/categories.csv
 backend/data.csv
+backend/test_emails/
