@@ -13,31 +13,32 @@ variable "project_name" {
 variable "vpc_id" {
   description = "Existing VPC ID (placeholder — replace in a real deployment)."
   type        = string
-  default     = "vpc-PLACEHOLDER"
+  # Format-valid fake ID so the Terraform IDE extension does not flag it.
+  default = "vpc-abcplaceholder0001"
 }
 
 variable "public_subnet_ids" {
   description = "Public subnet IDs for the ALB (minimum two AZs in production)."
   type        = list(string)
-  default     = ["subnet-PUBLIC-A-PLACEHOLDER", "subnet-PUBLIC-B-PLACEHOLDER"]
+  default     = ["subnet-abcplaceholder00a", "subnet-abcplaceholder00b"]
 }
 
 variable "private_subnet_ids" {
-  description = "Private subnet IDs for backend EC2 instances."
+  description = "Private subnet IDs for EKS nodes / backend (minimum two AZs)."
   type        = list(string)
-  default     = ["subnet-PRIVATE-A-PLACEHOLDER", "subnet-PRIVATE-B-PLACEHOLDER"]
+  default     = ["subnet-abcplaceholder00c", "subnet-abcplaceholder00d"]
 }
 
 variable "certificate_arn" {
   description = "ACM certificate ARN for HTTPS listener (placeholder — not created here)."
   type        = string
-  default     = "arn:aws:acm:us-east-1:000000000000:certificate/PLACEHOLDER"
+  default     = "arn:aws:acm:us-east-1:423687459077:certificate/00000000-0000-0000-0000-000000000001"
 }
 
 variable "backend_ami_id" {
   description = "AMI for EC2 instances running the API container (placeholder)."
   type        = string
-  default     = "ami-PLACEHOLDER"
+  default     = "ami-abcplaceholder001"
 }
 
 variable "backend_instance_type" {
@@ -81,7 +82,7 @@ variable "frontend_domain_name" {
 variable "frontend_certificate_arn" {
   description = "ACM cert ARN in us-east-1 for CloudFront (placeholder)."
   type        = string
-  default     = "arn:aws:acm:us-east-1:000000000000:certificate/FRONTEND-PLACEHOLDER"
+  default     = "arn:aws:acm:us-east-1:423687459077:certificate/00000000-0000-0000-0000-000000000002"
 }
 
 variable "category_data_bucket_name" {

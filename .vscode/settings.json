@@ -1,0 +1,9 @@
+{
+  "terraform.languageServer.enable": true,
+  "terraform.languageServer.rootModules": [
+    "infra"
+  ],
+  "terraform-ls.rootModules": [
+    "infra"
+  ]
+}

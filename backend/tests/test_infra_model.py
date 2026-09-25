@@ -91,8 +91,8 @@ def test_no_real_production_resource_ids(infra_variables_tf):
 
 
 def test_placeholders_used(infra_variables_tf):
-    assert "PLACEHOLDER" in infra_variables_tf
-    assert "vpc-PLACEHOLDER" in infra_variables_tf
+    assert "placeholder" in infra_variables_tf.lower()
+    assert "vpc-abcplaceholder0001" in infra_variables_tf
 
 
 def test_phase6_documentation_exists():
