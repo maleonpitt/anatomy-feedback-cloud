@@ -81,23 +81,21 @@ Nginx (TLS + reverse proxy)
 
 Frontend `App.js` uses direct FastAPI paths with `REACT_APP_API_BASE_URL`.
 
-## Legacy material
+## Historical reference (outside this repo)
 
 | Location | Contents |
 |----------|----------|
-| `legacy/nginx/` | Historical Nginx + Let's Encrypt config |
-| `legacy/docker-compose.production.yml` | Live-server reference layout |
 | `../anatomy-feedback-backup/` | Pre-modernization snapshot (Flask monolith) |
 
-All marked **LEGACY / REFERENCE ONLY — NOT PART OF TARGET ARCHITECTURE — DO NOT DEPLOY**.
+**REFERENCE ONLY — NOT PART OF TARGET ARCHITECTURE — DO NOT DEPLOY.**
 
 ## Backup comparison (Phase 8)
 
 `anatomy-feedback-backup/` is a near-duplicate of the **pre-modernization** tree:
 
 - Contains `backend/app.py` (Flask monolith) — removed from canonical repo
-- No `routers/`, `services/`, `tests/`, `infra/`, `docs/`, `legacy/`
-- Active `nginx/` at repo root (not archived)
+- No `routers/`, `services/`, `tests/`, `infra/`, `docs/`
+- Had active `nginx/` at repo root (this cloud repo does not)
 - No FastAPI migration artifacts
 
 **Nothing unique is required** for the modernized application. The backup is retained only as a historical reference until manually removed.

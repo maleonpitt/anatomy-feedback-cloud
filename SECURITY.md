@@ -20,21 +20,24 @@ cp frontend/.env.example frontend/.env
 # edit .env files locally — they are gitignored
 ```
 
-## Cloud / CI (later)
+## Cloud / CI
 
-| Secret location | Use |
+| Secret / config | Use |
 |-----------------|-----|
-| GitHub Actions **encrypted secrets** | CI deploy credentials (OIDC preferred over long-lived keys) |
-| AWS Secrets Manager / SSM Parameter Store | Runtime app secrets for ECS tasks |
-| IAM task roles | S3/ECR access — prefer roles over embedding keys in images |
+| GitHub secret **`AWS_ROLE_ARN`** | OIDC deploy role — live CD only |
+| GitHub variables (`ECR_REPOSITORY`, …) | CD targets — [`docs/CD_PRACTICE.md`](docs/CD_PRACTICE.md) |
+| **AWS Secrets Manager** (`infra/secrets.tf`) | Microsoft / OpenAI / session secrets |
+| External Secrets Operator | Syncs SM → K8s Secret — [`docs/SECRETS_PRACTICE.md`](docs/SECRETS_PRACTICE.md) |
+| API IRSA | Category S3 (no static AWS keys) |
 
 ## Hard rules for this practice project
 
 1. No `terraform apply` / live deploy without explicit authorization.  
-2. Prefer **OIDC** from GitHub → AWS over storing `AWS_ACCESS_KEY_ID` in GitHub when possible.  
-3. Images in **ECR** should not bake in secrets; inject at runtime.  
-4. `SKIP_AUTH` / `/dev-login` is **local-only** (`FLASK_ENV=local`). Never enable in ECS/prod task env.  
-5. If a secret is ever pushed accidentally: **rotate it** and scrub history (or treat the key as burned).
+2. Prefer **OIDC** from GitHub → AWS (`infra/github_oidc.tf`) over storing `AWS_ACCESS_KEY_ID` in GitHub.  
+3. Images in **ECR** should not bake in secrets; inject at runtime via Secrets Manager → ESO → env.  
+4. `SKIP_AUTH` / `/dev-login` is **local-only** (`FLASK_ENV=local`). Never enable in cloud/prod env.  
+5. CD defaults to **dry_run=true**; set `dry_run=false` only after authorize + `AWS_ROLE_ARN`.  
+6. If a secret is ever pushed accidentally: **rotate it** and scrub history (or treat the key as burned).
 
 ## Reporting
 

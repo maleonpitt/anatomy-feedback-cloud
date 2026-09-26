@@ -64,7 +64,7 @@ cd backend && python -m pytest -v
 
 ## What is NOT used locally
 
-- Nginx (`legacy/nginx/` — archived)
+- Nginx (retired from target architecture)
 - CloudFront / frontend S3 bucket
 - ALB / EC2
 

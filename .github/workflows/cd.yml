@@ -1,0 +1,282 @@
+name: CD
+
+# Full ship path practice: build → ECR → S3/CloudFront → EKS.
+# Default is dry_run=true (build only, no AWS). Live publish requires:
+#   1) Explicit authorization + terraform apply
+#   2) GitHub secret AWS_ROLE_ARN (= terraform output github_deploy_role_arn)
+#   3) Repo variables below (or defaults matching infra placeholders)
+#
+# Does NOT run on push — manual only (workflow_dispatch).
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Build only; skip AWS publish/deploy (safe default)"
+        type: boolean
+        default: true
+      image_tag:
+        description: "Image/git tag override (empty = github.sha)"
+        type: string
+        default: ""
+
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY || 'anatomy-feedback-api' }}
+  FRONTEND_BUCKET: ${{ vars.FRONTEND_BUCKET || 'anatomy-feedback-frontend-PLACEHOLDER' }}
+  CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+  EKS_CLUSTER_NAME: ${{ vars.EKS_CLUSTER_NAME || 'anatomy-feedback-eks' }}
+  K8S_NAMESPACE: anatomy-feedback
+  K8S_DEPLOYMENT: anatomy-feedback-api
+  REACT_APP_API_BASE_URL: ${{ vars.REACT_APP_API_BASE_URL || 'https://api.example.com' }}
+
+jobs:
+  build-api:
+    name: Build API image
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.tags.outputs.image_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve image tag
+        id: tags
+        run: |
+          TAG="${{ inputs.image_tag }}"
+          if [ -z "$TAG" ]; then TAG="${GITHUB_SHA}"; fi
+          echo "image_tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build API image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          load: true
+          tags: |
+            anatomy-feedback-api:local
+            anatomy-feedback-api:${{ steps.tags.outputs.image_tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Save image tarball (dry-run artifact)
+        if: ${{ inputs.dry_run }}
+        run: docker save anatomy-feedback-api:${{ steps.tags.outputs.image_tag }} | gzip > api-image.tar.gz
+
+      - name: Upload API image artifact
+        if: ${{ inputs.dry_run }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-image-${{ steps.tags.outputs.image_tag }}
+          path: api-image.tar.gz
+          retention-days: 7
+
+  build-frontend:
+    name: Build frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install and build
+        working-directory: frontend
+        env:
+          CI: true
+          REACT_APP_API_BASE_URL: ${{ env.REACT_APP_API_BASE_URL }}
+        run: |
+          npm ci
+          npm run build
+
+      - name: Upload frontend build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Package tarball
+        if: ${{ inputs.dry_run }}
+        run: tar -czf frontend-build.tar.gz -C frontend/build .
+
+      - name: Upload frontend tarball
+        if: ${{ inputs.dry_run }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build-package
+          path: frontend-build.tar.gz
+          retention-days: 30
+
+  publish-api:
+    name: Push API image to ECR
+    needs: build-api
+    if: ${{ inputs.dry_run == false }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Require AWS_ROLE_ARN
+        env:
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+        run: |
+          if [ -z "$AWS_ROLE_ARN" ]; then
+            echo "::error::Set GitHub secret AWS_ROLE_ARN to terraform output github_deploy_role_arn (after authorized apply)."
+            exit 1
+          fi
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ needs.build-api.outputs.image_tag }}
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  publish-frontend:
+    name: Sync frontend to S3 + invalidate CloudFront
+    needs: build-frontend
+    if: ${{ inputs.dry_run == false }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Download frontend build
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build
+
+      - name: Require AWS_ROLE_ARN
+        env:
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+        run: |
+          if [ -z "$AWS_ROLE_ARN" ]; then
+            echo "::error::Set GitHub secret AWS_ROLE_ARN before live frontend publish."
+            exit 1
+          fi
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Sync to S3
+        run: |
+          aws s3 sync frontend/build "s3://${FRONTEND_BUCKET}" \
+            --delete \
+            --cache-control "public,max-age=31536000,immutable" \
+            --exclude "index.html" \
+            --exclude "service-worker.js" \
+            --exclude "asset-manifest.json"
+          aws s3 cp frontend/build/index.html "s3://${FRONTEND_BUCKET}/index.html" \
+            --cache-control "public,max-age=0,must-revalidate" \
+            --content-type "text/html"
+
+      - name: Invalidate CloudFront
+        if: ${{ env.CLOUDFRONT_DISTRIBUTION_ID != '' }}
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" \
+            --paths "/*"
+
+  deploy-eks:
+    name: Roll EKS Deployment
+    needs: [build-api, publish-api]
+    if: ${{ inputs.dry_run == false }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Require AWS_ROLE_ARN
+        env:
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+        run: |
+          if [ -z "$AWS_ROLE_ARN" ]; then
+            echo "::error::Set GitHub secret AWS_ROLE_ARN before EKS deploy."
+            exit 1
+          fi
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name "$EKS_CLUSTER_NAME" --region "$AWS_REGION"
+
+      - name: Set image and wait for rollout
+        env:
+          IMAGE_TAG: ${{ needs.build-api.outputs.image_tag }}
+          ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID || '423687459077' }}
+        run: |
+          IMAGE="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}"
+          kubectl set image "deployment/${K8S_DEPLOYMENT}" \
+            "api=${IMAGE}" \
+            -n "$K8S_NAMESPACE"
+          kubectl rollout status "deployment/${K8S_DEPLOYMENT}" -n "$K8S_NAMESPACE" --timeout=180s
+
+  summarize:
+    name: Summarize
+    needs: [build-api, build-frontend, publish-api, publish-frontend, deploy-eks]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write summary
+        run: |
+          {
+            echo "## CD run"
+            echo ""
+            echo "- **dry_run:** \`${{ inputs.dry_run }}\`"
+            echo "- **image_tag:** \`${{ needs.build-api.outputs.image_tag }}\`"
+            echo "- **build-api:** \`${{ needs.build-api.result }}\`"
+            echo "- **build-frontend:** \`${{ needs.build-frontend.result }}\`"
+            echo "- **publish-api:** \`${{ needs.publish-api.result }}\`"
+            echo "- **publish-frontend:** \`${{ needs.publish-frontend.result }}\`"
+            echo "- **deploy-eks:** \`${{ needs.deploy-eks.result }}\`"
+            echo ""
+            if [ "${{ inputs.dry_run }}" = "true" ]; then
+              echo "Dry run only — no AWS mutations. Re-run with dry_run=false after authorized apply + AWS_ROLE_ARN."
+            else
+              echo "Live path requested — check job logs for ECR / S3 / EKS results."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

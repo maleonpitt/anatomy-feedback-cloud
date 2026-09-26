@@ -15,9 +15,10 @@ spec:
       labels:
         app: anatomy-feedback-api
     spec:
+      serviceAccountName: anatomy-feedback-api
       containers:
         - name: api
-          # Placeholder ECR image — swap tag after CI push (never bake secrets into the image)
+          # Placeholder ECR image — CD replaces :latest with git SHA after ECR push
           image: 423687459077.dkr.ecr.us-east-1.amazonaws.com/anatomy-feedback-api:latest
           imagePullPolicy: IfNotPresent
           ports:

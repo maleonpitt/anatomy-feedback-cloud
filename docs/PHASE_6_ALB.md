@@ -158,7 +158,7 @@ CORS and cookie settings remain env-driven (`FRONTEND_URL`, `CORS_ALLOWED_ORIGIN
 
 ## Nginx (retired in Phase 7)
 
-Nginx is **not** part of the target architecture. Legacy config: [`legacy/nginx/`](../legacy/nginx/).  
+Nginx is **not** part of the target architecture.  
 See [`PHASE_7_CLOUDFRONT.md`](PHASE_7_CLOUDFRONT.md) for the frontend cutover.
 
 ## Repository alignment (inspection summary)
@@ -170,8 +170,8 @@ See [`PHASE_7_CLOUDFRONT.md`](PHASE_7_CLOUDFRONT.md) for the frontend cutover.
 | `/health` | `GET /health` → 200, `{"status":"healthy"}` |
 | Docker | `backend/Dockerfile`; compose exposes 5000 internally |
 | Terraform before Phase 6 | None |
-| Nginx | Retired — archived under `legacy/nginx/` |
-| Live host references | `legacy/` only (not in active application code) |
+| Nginx | Retired — removed from this repo |
+| Live host references | Not in active application code |
 | EC2/ECS in repo | Neither represented until `infra/` (Phase 6) |
 
 ## Terraform module

@@ -44,8 +44,38 @@ output "frontend_bucket_name" {
 }
 
 output "category_data_bucket_name" {
-  description = "Documented placeholder for Phase 4 category storage (backend only)."
-  value       = var.category_data_bucket_name
+  description = "Category CSV bucket (backend / IRSA only — not the frontend bucket)."
+  value       = aws_s3_bucket.category.id
+}
+
+output "cloudfront_distribution_id" {
+  description = "CloudFront distribution ID for cache invalidation after S3 sync."
+  value       = aws_cloudfront_distribution.frontend.id
+}
+
+output "github_deploy_role_arn" {
+  description = "IAM role ARN for GitHub Actions OIDC (set as GitHub secret AWS_ROLE_ARN)."
+  value       = aws_iam_role.github_deploy.arn
+}
+
+output "api_irsa_role_arn" {
+  description = "IAM role ARN for API pods (annotate ServiceAccount for IRSA)."
+  value       = aws_iam_role.api_irsa.arn
+}
+
+output "eso_irsa_role_arn" {
+  description = "IAM role ARN for External Secrets Operator (Secrets Manager sync)."
+  value       = aws_iam_role.eso_irsa.arn
+}
+
+output "api_secrets_manager_arn" {
+  description = "Secrets Manager ARN for API secrets (Microsoft, OpenAI, session)."
+  value       = aws_secretsmanager_secret.api.arn
+}
+
+output "api_secrets_manager_name" {
+  description = "Secrets Manager name/path for API secrets."
+  value       = aws_secretsmanager_secret.api.name
 }
 
 output "ecr_repository_url" {

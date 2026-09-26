@@ -6,7 +6,7 @@ metadata:
 data:
   FLASK_ENV: "production"
   CATEGORY_STORE_TYPE: "s3"
-  # Non-secret config only. Secrets belong in Secret / Secrets Manager / ExternalSecrets.
+  # Non-secret config only. Secrets: AWS Secrets Manager → ESO → Secret (see external-secret.yaml).
   AWS_REGION: "us-east-1"
   # FRONTEND_URL and CORS set per environment — example.com placeholders
   FRONTEND_URL: "https://app.example.com"

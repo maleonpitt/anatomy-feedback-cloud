@@ -75,13 +75,12 @@ def test_phase7_documentation_exists():
     assert "/api" in text
 
 
-def test_legacy_nginx_archived_not_in_active_compose():
+def test_no_nginx_in_active_compose_or_repo():
     root_compose = (REPO_ROOT / "docker-compose.yml").read_text()
     assert "feedback-nginx" not in root_compose
-    assert "legacy/nginx" not in root_compose
-    legacy_compose = (REPO_ROOT / "legacy" / "docker-compose.production.yml").read_text()
-    assert "nginx" in legacy_compose.lower()
-    assert (REPO_ROOT / "legacy" / "nginx" / "default.conf").is_file()
+    assert "nginx" not in root_compose.lower()
+    assert not (REPO_ROOT / "legacy").exists()
+    assert not (REPO_ROOT / "nginx").exists()
 
 
 def test_backend_alb_model_still_present():

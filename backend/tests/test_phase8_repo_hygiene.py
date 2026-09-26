@@ -26,15 +26,9 @@ def test_no_flask_monolith_in_active_backend():
     assert (REPO_ROOT / "backend" / "main.py").is_file()
 
 
-def test_no_active_nginx_config_at_repo_root():
-    assert not (REPO_ROOT / "nginx" / "default.conf").exists()
-    assert (REPO_ROOT / "legacy" / "nginx" / "default.conf").is_file()
-
-
-def test_legacy_directory_labeled():
-    text = (REPO_ROOT / "legacy" / "README.md").read_text()
-    assert "LEGACY" in text
-    assert "DO NOT DEPLOY" in text
+def test_no_nginx_or_legacy_stack_in_repo():
+    assert not (REPO_ROOT / "nginx").exists()
+    assert not (REPO_ROOT / "legacy").exists()
 
 
 def test_no_gunicorn_dependency():

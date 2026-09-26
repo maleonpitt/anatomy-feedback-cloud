@@ -51,8 +51,6 @@ Do not serve the React app from the category bucket or vice versa.
 | Backend TLS termination | ALB HTTPS listener |
 | `/api` prefix strip | **Retired** — frontend uses explicit API paths on `api.example.com` |
 
-Legacy Nginx config is archived under [`legacy/nginx/`](../legacy/nginx/).
-
 ## Frontend request path
 
 ```text

@@ -3,7 +3,7 @@
 Public DevOps practice repo: take the student feedback app and make it **cloud-friendly**.
 
 **AWS account for practice (when authorized):** `423687459077`  
-**Do not commit secrets.** Use `.env.example` placeholders and GitHub Actions / AWS Secrets Manager later.
+**Do not commit secrets.** Use `.env.example` locally; cloud uses **AWS Secrets Manager** + External Secrets (see [`docs/SECRETS_PRACTICE.md`](docs/SECRETS_PRACTICE.md)).
 
 ## Product
 
@@ -20,9 +20,9 @@ Stack today (application):
 ```text
 GitHub Actions (CI/CD)
         │
-        ├─► test / build
-        ├─► push API image → Amazon ECR
-        └─► (later) React build → S3 + CloudFront
+        ├─► CI: test / build / terraform validate
+        ├─► CD dry-run: API image + React artifacts
+        └─► CD live (when authorized): ECR → S3/CloudFront → EKS
 
 Runtime (practice path — EKS / Kubernetes):
   Browser → CloudFront → private S3 → React
@@ -37,7 +37,7 @@ Runtime (practice path — EKS / Kubernetes):
 | **Optional alternate** | ECS Fargate — lighter path if you want a non-K8s comparison later |
 | **Frontend** | S3 + CloudFront |
 | **IaC** | Terraform (VPC, EKS, ECR, ALB/Ingress, IAM) |
-| **CI/CD** | GitHub Actions → ECR → (later) deploy to EKS |
+| **CI/CD** | GitHub Actions → CI on push; **CD** dry-run builds, live path = ECR + S3 + EKS (manual, after authorize) |
 
 ### ECR vs ECS vs EKS
 
@@ -74,4 +74,4 @@ See [`SECURITY.md`](SECURITY.md).
 Terraform under `infra/` and manifests under `k8s/` are **apply-ready sketches for practice**.  
 Do **not** `terraform apply` or create a real EKS cluster unless you explicitly authorize it.
 
-See [`docs/EKS_PRACTICE.md`](docs/EKS_PRACTICE.md) and [`k8s/README.md`](k8s/README.md).
+See [`docs/EKS_PRACTICE.md`](docs/EKS_PRACTICE.md), [`docs/CD_PRACTICE.md`](docs/CD_PRACTICE.md), [`docs/SECRETS_PRACTICE.md`](docs/SECRETS_PRACTICE.md), and [`k8s/README.md`](k8s/README.md).

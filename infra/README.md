@@ -29,8 +29,15 @@ Do **not** run `terraform apply` or `destroy` against AWS account `423687459077`
 | `ecr.tf` | ECR repository for API images |
 | `eks.tf` / `eks_iam.tf` | EKS cluster, node group, IAM |
 | `frontend.tf` | CloudFront + private frontend S3 |
+| `category_s3.tf` | Private category CSV bucket (API / IRSA) |
+| `secrets.tf` | AWS Secrets Manager for API credentials |
+| `eso_irsa.tf` | IRSA for External Secrets Operator |
+| `github_oidc.tf` | GitHub Actions OIDC deploy role |
+| `irsa_api.tf` | API pod IAM role for category S3 |
 | `main.tf` | Alternate EC2+ALB model (legacy learning) |
-| `variables.tf` / `outputs.tf` | Placeholders only |
+| `variables.tf` / `outputs.tf` | Placeholders + CD/secrets outputs |
+
+CD: [`../docs/CD_PRACTICE.md`](../docs/CD_PRACTICE.md) · Secrets: [`../docs/SECRETS_PRACTICE.md`](../docs/SECRETS_PRACTICE.md)
 
 ## Safe local commands
 

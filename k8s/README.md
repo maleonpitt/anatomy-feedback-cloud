@@ -7,8 +7,10 @@
 | File | Purpose |
 |------|---------|
 | `namespace.yaml` | `anatomy-feedback` namespace |
+| `serviceaccount.yaml` | IRSA-annotated ServiceAccount for API pods |
+| `external-secret.yaml` | Secrets Manager → K8s Secret (ESO) |
 | `configmap.yaml` | Non-secret env (no `SKIP_AUTH`) |
-| `secret.example.yaml` | Placeholder secrets — copy pattern only |
+| `secret.example.yaml` | Manual Secret fallback only — prefer ESO |
 | `deployment.yaml` | FastAPI pods, ECR image placeholder, `/health` probes |
 | `service.yaml` | ClusterIP → container :5000 |
 | `ingress.yaml` | ALB Ingress sketch (AWS LB Controller) |
@@ -41,4 +43,4 @@ Ingress/ALB annotations need a real cluster + AWS LB Controller.
 
 ## Related Terraform
 
-See `infra/ecr.tf`, `infra/eks.tf`, `infra/eks_iam.tf` and `docs/EKS_PRACTICE.md`.
+See `infra/ecr.tf`, `infra/eks.tf`, `infra/secrets.tf`, `infra/eso_irsa.tf`, and [`docs/SECRETS_PRACTICE.md`](../docs/SECRETS_PRACTICE.md).

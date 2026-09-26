@@ -7,7 +7,7 @@ Frontend: https://app.example.com  → CloudFront → private S3 (React build)
 API:      https://api.example.com  → ALB → Uvicorn/FastAPI
 ```
 
-Nginx is **retired** from the target model. Legacy files live under `legacy/`.
+Nginx is **retired** from the target model (not present in this repo).
 
 ## Frontend build (public)
 
@@ -38,10 +38,6 @@ The old Nginx `/api` strip is no longer part of the target architecture.
 
 See [`docs/LOCAL_DEVELOPMENT.md`](docs/LOCAL_DEVELOPMENT.md).  
 Root `docker-compose.yml` runs the API only; use `npm start` for the UI.
-
-## Legacy production reference
-
-`legacy/nginx/`, `legacy/docker-compose.production.yml` — historical `app.heilab.pitt.edu` layout.
 
 Secrets: real `.env` files are gitignored. Only `.env.example` is tracked.
 

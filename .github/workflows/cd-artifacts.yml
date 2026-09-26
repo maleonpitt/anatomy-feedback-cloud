@@ -1,12 +1,21 @@
 name: CD (artifacts only)
 
-# Packages a frontend build tarball for download.
-# Does NOT deploy to AWS or modify production infrastructure.
+# DEPRECATED — use workflow "CD" (.github/workflows/cd.yml) with dry_run=true.
+# Kept as a thin alias so older bookmarks still produce a frontend tarball.
 
 on:
   workflow_dispatch:
 
 jobs:
+  redirect-note:
+    name: Use CD dry_run instead
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain
+        run: |
+          echo "::warning::cd-artifacts.yml is deprecated. Use Actions → CD with dry_run=true (default)."
+          echo "See docs/CD_PRACTICE.md"
+
   package-frontend:
     name: Build and package frontend
     runs-on: ubuntu-latest

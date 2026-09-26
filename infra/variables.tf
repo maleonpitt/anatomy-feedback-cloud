@@ -137,3 +137,35 @@ variable "eks_node_max_size" {
   type    = number
   default = 3
 }
+
+# --- GitHub OIDC / IRSA (CD + API workload identity) ---
+
+variable "github_repository" {
+  description = "GitHub repo allowed to assume the deploy role (owner/name)."
+  type        = string
+  default     = "maleonpitt/anatomy-feedback-cloud"
+}
+
+variable "k8s_namespace" {
+  description = "Kubernetes namespace for the API (matches k8s/namespace.yaml)."
+  type        = string
+  default     = "anatomy-feedback"
+}
+
+variable "k8s_api_service_account" {
+  description = "ServiceAccount name used by API pods for IRSA."
+  type        = string
+  default     = "anatomy-feedback-api"
+}
+
+variable "k8s_eso_service_account" {
+  description = "ServiceAccount name for External Secrets Operator in the app namespace."
+  type        = string
+  default     = "external-secrets"
+}
+
+variable "api_secrets_manager_name" {
+  description = "Secrets Manager secret name/path for API runtime credentials."
+  type        = string
+  default     = "anatomy-feedback/api"
+}
